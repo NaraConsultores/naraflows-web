@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import vm from 'node:vm';
 import {BpmnModdle} from 'bpmn-moddle';
+import {validateSnapshot} from '../plugins/naraflows/shared/audit.mjs';
 
 const context={crypto:{randomUUID}};
 vm.runInNewContext(await readFile(new URL('../erd-model.js',import.meta.url),'utf8'),context);
@@ -35,6 +36,38 @@ test('ER rejects dangling endpoints, duplicate field names and invalid geometry 
   assert.throws(()=>M.apply(model,{type:'erd_field_upsert',tableId:source,name:'ID',dataType:'integer'}),/únicos/);
   assert.throws(()=>M.apply(model,{type:'erd_table_update',tableId:source,width:10}),/200–1000/);
   assert.equal(JSON.stringify(model),before);
+});
+
+test('Spanish field labels round-trip without changes to physical names, keys or relationships',async()=>{
+  const {model,source,target}=fixture();
+  const sourceFieldId=M.table(model,source).fields[0].id;
+  const fieldId=M.table(model,target).fields[1].id;
+  const before=M.apply(model,{type:'erd_relationship_create',sourceTableId:source,sourceFieldId,targetTableId:target,targetFieldId:fieldId}).model;
+  const op={type:'erd_field_label',tableId:target,fieldId};
+  const label='Área de origen <externa> & región';
+  const labeled=M.apply(before,{...op,label:' '+label+' '});
+  assert.equal(labeled.affectedId,fieldId);
+  assert.equal(M.field(labeled.model,target,fieldId).label,label);
+  assert.equal(M.field(labeled.model,target,fieldId).name,'origen_id');
+  assert.equal(JSON.stringify(M.apply(labeled.model,{...op,label:null}).model),JSON.stringify(before));
+  for(const invalid of ['', '   ', 42, 'a'.repeat(121)]){
+    assert.throws(()=>M.apply(before,{...op,label:invalid}),{code:'ER_INVALID'});
+  }
+  assert.throws(()=>M.apply(before,{...op,fieldId:'missing',label}),{code:'ER_NOT_FOUND'});
+  assert.equal(M.field(before,target,fieldId).label,undefined);
+
+  const moddle=new BpmnModdle({nara:context.NaraERModdle});
+  const extension=moddle.create('nara:EntityRelationship',{id:before.id,name:before.name,version:'1',json:JSON.stringify(labeled.model)});
+  const definitions=moddle.create('bpmn:Definitions',{targetNamespace:'https://example.test/bpmn',extensionElements:moddle.create('bpmn:ExtensionElements',{values:[extension]})});
+  const {xml}=await moddle.toXML(definitions);
+  const {rootElement,warnings}=await moddle.fromXML(xml);
+  assert.deepEqual(warnings,[]);
+  const reopened=JSON.parse(rootElement.extensionElements.values[0].json);
+  assert.equal(JSON.stringify(M.validate(reopened)),JSON.stringify(labeled.model));
+  const snapshot={diagramType:'erd',dataModel:reopened};
+  assert.deepEqual(validateSnapshot(snapshot,{geometry:false}).issues,[]);
+  M.field(reopened,target,fieldId).label=' ';
+  assert.ok(validateSnapshot(snapshot,{geometry:false}).issues.some(issue=>issue.code==='INVALID_FIELD_LABEL'&&issue.elementIds.includes(fieldId)));
 });
 
 test('BPMN extension roundtrip preserves ER, foreign extensions, process IDs, documentation and geometry',async()=>{

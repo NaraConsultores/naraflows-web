@@ -2,7 +2,7 @@ import http from 'node:http';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { TOOL_CONTRACT } from '../shared/contract.mjs';
 
-export const VERSION = '0.12.0';
+export const VERSION = '0.12.1';
 const token = () => randomBytes(32).toString('base64url');
 const same = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;

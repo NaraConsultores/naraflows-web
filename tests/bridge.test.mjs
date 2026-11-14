@@ -95,6 +95,9 @@ test('bundled plugin starts outside the checkout without npm install and serves 
   assert.ok(discovered.some(tool=>tool.name==='naraflows_validate'));
   assert.ok(discovered.some(tool=>tool.name==='naraflows_edit_batch'));
   const editInput=discovered.find(tool=>tool.name==='naraflows_edit').inputSchema;assert.deepEqual(editInput.properties.response.enum,['full','summary']);
+  const labelOperation=editInput.properties.operation.oneOf.find(operation=>operation.properties.type.const==='erd_field_label');
+  assert.deepEqual(labelOperation.required,['type','tableId','fieldId','label']);
+  assert.equal(labelOperation.additionalProperties,false);
   for(const field of ['activitySize','"label"','"height"'])assert.ok(editSchema.includes(field),'Missing matrix field '+field);
   assert.ok(JSON.stringify(discovered.find(tool=>tool.name==='naraflows_export_bpmn').inputSchema).includes('expectedRevision'));
   const connection = (await client.callTool({ name: 'naraflows_connect', arguments: {} })).structuredContent;

@@ -31367,7 +31367,7 @@ var EVENT_KINDS = {
 };
 
 // plugins/naraflows/server/bridge.mjs
-var VERSION = "0.12.0";
+var VERSION = "0.12.1";
 var token = () => randomBytes(32).toString("base64url");
 var same = (a, b) => {
   if (typeof a !== "string" || typeof b !== "string") return false;
@@ -31701,6 +31701,7 @@ async function startServer(bridgeOptions = {}) {
     external_exports.object({ type: external_exports.literal("erd_table_update"), tableId: elementId, name: erName.optional(), x: finite.optional(), y: finite.optional(), width: external_exports.number().min(200).max(1e3).optional() }),
     external_exports.object({ type: external_exports.literal("erd_field_upsert"), tableId: elementId, fieldId: elementId.optional(), name: erName, dataType: erType, primaryKey: external_exports.boolean().optional(), foreignKey: external_exports.boolean().optional(), nullable: external_exports.boolean().optional() }),
     external_exports.object({ type: external_exports.literal("erd_field_delete"), tableId: elementId, fieldId: elementId }),
+    external_exports.object({ type: external_exports.literal("erd_field_label"), tableId: elementId, fieldId: elementId, label: erName.refine((value) => Boolean(value.trim()), "La etiqueta visible no puede estar en blanco").nullable().describe("Etiqueta visible del campo. null recupera la visualizaci\xF3n del nombre f\xEDsico.") }).strict(),
     external_exports.object({ type: external_exports.literal("erd_field_move"), tableId: elementId, fieldId: elementId, direction: external_exports.enum(["up", "down"]) }),
     external_exports.object({ type: external_exports.literal("erd_relationship_create"), sourceTableId: elementId, sourceFieldId: elementId, targetTableId: elementId, targetFieldId: elementId, sourceCardinality: cardinality.default("1"), targetCardinality: cardinality.default("N"), label: external_exports.string().max(120).optional() }),
     external_exports.object({ type: external_exports.literal("erd_relationship_update"), relationshipId: elementId, sourceTableId: elementId.optional(), sourceFieldId: elementId.optional(), targetTableId: elementId.optional(), targetFieldId: elementId.optional(), sourceCardinality: cardinality.optional(), targetCardinality: cardinality.optional(), label: external_exports.string().max(120).optional() }),
