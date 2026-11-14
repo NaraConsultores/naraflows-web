@@ -18,6 +18,10 @@ python -m http.server 8766 --bind 127.0.0.1
 
 Abrir `http://127.0.0.1:8766/`. No hay servidor de documentos ni base de datos.
 
+## Versión 0.12.4
+
+- Las columnas ER admiten una etiqueta visible en español. Sus propiedades y el BPMN editable conservan el nombre físico.
+
 ## Versión 0.12.2
 
 - Usa el logotipo actualizado y redirige la entrada anterior al editor NaraFlows. La página de retorno de Microsoft conserva su dirección registrada.

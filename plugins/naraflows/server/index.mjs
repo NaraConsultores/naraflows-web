@@ -52,6 +52,7 @@ const edit = z.discriminatedUnion('type', [
   z.object({type:z.literal('erd_table_update'),tableId:elementId,name:erName.optional(),x:finite.optional(),y:finite.optional(),width:z.number().min(200).max(1000).optional()}),
   z.object({type:z.literal('erd_field_upsert'),tableId:elementId,fieldId:elementId.optional(),name:erName,dataType:erType,primaryKey:z.boolean().optional(),foreignKey:z.boolean().optional(),nullable:z.boolean().optional()}),
   z.object({type:z.literal('erd_field_delete'),tableId:elementId,fieldId:elementId}),
+  z.object({type:z.literal('erd_field_label'),tableId:elementId,fieldId:elementId,label:erName.refine(value=>Boolean(value.trim()),'La etiqueta visible no puede estar en blanco').nullable().describe('Etiqueta visible del campo. null recupera la visualización del nombre físico.')}).strict(),
   z.object({type:z.literal('erd_field_move'),tableId:elementId,fieldId:elementId,direction:z.enum(['up','down'])}),
   z.object({type:z.literal('erd_relationship_create'),sourceTableId:elementId,sourceFieldId:elementId,targetTableId:elementId,targetFieldId:elementId,sourceCardinality:cardinality.default('1'),targetCardinality:cardinality.default('N'),label:z.string().max(120).optional()}),
   z.object({type:z.literal('erd_relationship_update'),relationshipId:elementId,sourceTableId:elementId.optional(),sourceFieldId:elementId.optional(),targetTableId:elementId.optional(),targetFieldId:elementId.optional(),sourceCardinality:cardinality.optional(),targetCardinality:cardinality.optional(),label:z.string().max(120).optional()}),

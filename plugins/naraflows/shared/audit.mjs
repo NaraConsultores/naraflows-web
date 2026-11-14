@@ -24,7 +24,14 @@ export function validateSnapshot(snapshot, { profile = 'review', geometry = true
   if (snapshot.diagramType === 'erd') {
     const model = snapshot.dataModel || {}, tables = new Map((model.tables || []).map(t => [t.id, t]));
     for (const table of tables.values()) {
-      const names = new Set(); for (const field of table.fields || []) { if (names.has(field.name)) add('DUPLICATE_FIELD', 'error', [table.id, field.id], 'Nombre de campo repetido.'); names.add(field.name); }
+      const names = new Set();
+      for (const field of table.fields || []) {
+        if (names.has(field.name)) add('DUPLICATE_FIELD', 'error', [table.id, field.id], 'Nombre de campo repetido.');
+        names.add(field.name);
+        if (field.label !== undefined && (typeof field.label !== 'string' || !field.label.trim() || field.label.length > 120)) {
+          add('INVALID_FIELD_LABEL', 'error', [table.id, field.id], 'La etiqueta visible debe tener entre 1 y 120 caracteres.');
+        }
+      }
     }
     for (const relation of model.relationships || []) for (const side of ['source', 'target']) {
       if (!tables.get(relation[side + 'TableId'])?.fields.some(f => f.id === relation[side + 'FieldId'])) add('DANGLING_RELATIONSHIP', 'error', [relation.id], 'La relación tiene un extremo inexistente.');
