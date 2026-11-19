@@ -43,7 +43,7 @@ const manifest = {};
 
 distributed.push('assets/naraflows-icon.svg');
 distributed.push('editor-visual.js','tab-ownership.js','editor-touch.js');
-distributed.push('workspace.css','workspace-ui.js','instant-edit.js','editor-structure.js','editor-readiness.js');
+distributed.push('workspace.css','workspace-ui.js','instant-edit.js','editor-structure.js','editor-readiness.js','erd-search.js');
 distributed.push('editor-operations.js','editor-blocks.js','vendor/model-audit.js','bpmn-merge.js', 'editor-properties.js', 'microsoft-ui.js', 'microsoft-auth.html', 'assets/microsoft-symbol.svg', 'vendor/microsoft-client.js', 'vendor/microsoft-auth.js', 'vendor/MICROSOFT_LICENSES.txt');
 for (const file of distributed) manifest[file] = createHash('sha256').update(await readFile(path.join(root, file))).digest('hex');
 // Use content versions so an existing browser cache cannot mix old and new code.
